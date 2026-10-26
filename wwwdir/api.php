@@ -128,7 +128,7 @@ switch ($b4af8b82d0e004d138b6f62947d7a1fa) {
                 }
                 break;
             case 'create':
-                $Bf4bb0ad11102aaccbf77b6cdc1fd66f = empty(a78bF8d35765BE2408c50712cE7A43Ad::$request['user_data']) ? array() : a78BF8d35765BE2408c50712ce7A43aD::$request['user_data'];
+                $Bf4bb0ad11102aaccbf77b6cdc1fd66f = apiWhitelistUserData(empty(a78bF8d35765BE2408c50712cE7A43Ad::$request['user_data']) ? array() : a78BF8d35765BE2408c50712ce7A43aD::$request['user_data']);
                 if (!empty($Bf4bb0ad11102aaccbf77b6cdc1fd66f['mac'])) {
                     $fb226b0ab56e366f44da9cf9ee107fff = array(1, 2, 3);
                     $bad0c96fedbc6eccfe927016a4dc3cd6 = base64_encode(strtoupper($Bf4bb0ad11102aaccbf77b6cdc1fd66f['mac']));
@@ -197,7 +197,7 @@ switch ($b4af8b82d0e004d138b6f62947d7a1fa) {
                 if (!empty(A78bf8D35765BE2408c50712cE7a43aD::$request['username']) && !empty(A78bf8D35765BE2408C50712ce7a43ad::$request['password'])) {
                     $f6806488699d3315dc5dc1e27a401b3e = a78BF8D35765be2408C50712cE7A43aD::$request['username'];
                     $A6a4b4fbceaf0ab570c374f4faaa990f = A78bF8D35765bE2408C50712Ce7a43aD::$request['password'];
-                    $Bf4bb0ad11102aaccbf77b6cdc1fd66f = empty(A78BF8d35765BE2408C50712Ce7A43aD::$request['user_data']) ? array() : a78Bf8D35765BE2408C50712Ce7A43aD::$request['user_data'];
+                    $Bf4bb0ad11102aaccbf77b6cdc1fd66f = apiWhitelistUserData(empty(A78BF8d35765BE2408C50712Ce7A43aD::$request['user_data']) ? array() : a78Bf8D35765BE2408C50712Ce7A43aD::$request['user_data']);
                     $f566700a43ee8e1f0412fe10fbdf03df->query('SELECT * FROM `users` WHERE `username` = \'%s\' and `password` = \'%s\'', $f6806488699d3315dc5dc1e27a401b3e, $A6a4b4fbceaf0ab570c374f4faaa990f);
                     if ($f566700a43ee8e1f0412fe10fbdf03df->d1E5CE3B87BB868b9e6efD39Aa355A4F() > 0) {
                         $b0f1eb357ed72245e03dfe6268912497 = fBaaC025084a44F7876230Ff53A6137F($Bf4bb0ad11102aaccbf77b6cdc1fd66f);
@@ -216,7 +216,7 @@ switch ($b4af8b82d0e004d138b6f62947d7a1fa) {
                 break;
             case 'create':
                 $fb226b0ab56e366f44da9cf9ee107fff = array(1, 2, 3);
-                $Bf4bb0ad11102aaccbf77b6cdc1fd66f = empty(A78bf8D35765be2408c50712cE7A43Ad::$request['user_data']) ? array() : A78bF8d35765be2408c50712ce7A43Ad::$request['user_data'];
+                $Bf4bb0ad11102aaccbf77b6cdc1fd66f = apiWhitelistUserData(empty(A78bf8D35765be2408c50712cE7A43Ad::$request['user_data']) ? array() : A78bF8d35765be2408c50712ce7A43Ad::$request['user_data']);
                 if (!array_key_exists('username', $Bf4bb0ad11102aaccbf77b6cdc1fd66f)) {
                     $Bf4bb0ad11102aaccbf77b6cdc1fd66f['username'] = A78BF8d35765BE2408C50712cE7a43AD::E5182E3afa58AC7ec5D69d56B28819Cd(10);
                 }
@@ -297,6 +297,18 @@ switch ($b4af8b82d0e004d138b6f62947d7a1fa) {
                 break;
         }
         break;
+}
+function apiWhitelistUserData($d76067cf9572f7a6691c85c12faf2a29)
+{
+    if (!is_array($d76067cf9572f7a6691c85c12faf2a29)) {
+        return array();
+    }
+    // Only columns the API is meant to set on `users`. This stops a caller from
+    // mass-assigning arbitrary or internal columns (e.g. id, play_token) through
+    // user_data. 'mac' and 'output_formats' are transient keys the API itself
+    // reads and unsets before the row is built.
+    static $f0a1b2c3d4e5f60718293a4b5c6d7e8f = array('username', 'password', 'exp_date', 'admin_enabled', 'enabled', 'admin_notes', 'reseller_notes', 'bouquet', 'max_connections', 'is_restreamer', 'allowed_ips', 'allowed_ua', 'is_trial', 'is_mag', 'is_e2', 'force_server_id', 'is_isplock', 'as_number', 'isp_desc', 'forced_country', 'is_stalker', 'bypass_ua', 'pair_id', 'member_id', 'created_at', 'created_by', 'mac', 'output_formats');
+    return array_intersect_key($d76067cf9572f7a6691c85c12faf2a29, array_flip($f0a1b2c3d4e5f60718293a4b5c6d7e8f));
 }
 function fbAAC025084A44f7876230ff53A6137f($d76067cf9572f7a6691c85c12faf2a29)
 {
