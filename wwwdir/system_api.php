@@ -277,8 +277,11 @@ switch ($b4af8b82d0e004d138b6f62947d7a1fa) {
         break;
     case 'print_image':
         if (!empty(a78Bf8D35765BE2408c50712ce7a43Ad::$request['filename'])) {
-            $dae587fac852b56aefd2f953ed975545 = a78bF8D35765Be2408c50712cE7A43AD::$request['filename'];
-            if (file_exists($dae587fac852b56aefd2f953ed975545)) {
+            // Only serve files that resolve inside the panel's image directory;
+            // reject path traversal / arbitrary file reads.
+            $dae587fac852b56aefd2f953ed975545 = realpath(a78bF8D35765Be2408c50712cE7A43AD::$request['filename']);
+            $Fd1c0ae2b3948576e8c9a0f1d2e3b4c5 = realpath(MOVIES_IMAGES);
+            if ($dae587fac852b56aefd2f953ed975545 !== false && $Fd1c0ae2b3948576e8c9a0f1d2e3b4c5 !== false && strpos($dae587fac852b56aefd2f953ed975545, $Fd1c0ae2b3948576e8c9a0f1d2e3b4c5 . '/') === 0 && is_file($dae587fac852b56aefd2f953ed975545)) {
                 header('Content-Type: image/jpeg');
                 header('Content-Length: ' . (string) filesize($dae587fac852b56aefd2f953ed975545));
                 echo file_get_contents($dae587fac852b56aefd2f953ed975545);

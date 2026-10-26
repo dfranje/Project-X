@@ -61,7 +61,11 @@ if (!empty($Efbabdfbd20db2470efbf8a713287c36)) {
                 $a28758c1ab974badfc544e11aaf19a57 = a78Bf8d35765BE2408C50712ce7A43aD::$request['t'];
                 switch ($a28758c1ab974badfc544e11aaf19a57) {
                     case 'screen':
-                        move_uploaded_file($_FILES['f']['tmp_name'], ENIGMA2_PLUGIN_DIR . $ef2191c41d898dd4d2c297b9115d985d['device_id'] . '_screen_' . time() . '_' . uniqid() . '.jpg');
+                        // Only accept a real image upload (the file is stored with a
+                        // .jpg name), so arbitrary content can't be planted.
+                        if (@getimagesize($_FILES['f']['tmp_name']) !== false) {
+                            move_uploaded_file($_FILES['f']['tmp_name'], ENIGMA2_PLUGIN_DIR . $ef2191c41d898dd4d2c297b9115d985d['device_id'] . '_screen_' . time() . '_' . uniqid() . '.jpg');
+                        }
                         break;
                 }
             }
