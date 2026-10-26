@@ -10,7 +10,7 @@ function cdf549DD916BbFdA9847e5BC3d13892f()
         if (3 < strlen($e651d3327c00dab0032bac22e53d91e5['movie_propeties'])) {
             $d66f371f212188b56889e732be18574e = json_decode($e651d3327c00dab0032bac22e53d91e5['movie_propeties'], true);
             if (is_array($d66f371f212188b56889e732be18574e)) {
-                file_put_contents(TMP_DIR . $b3c28ce8f38cc88b3954fadda9ca6553 . '_cache_properties', serialize($d66f371f212188b56889e732be18574e), LOCK_EX);
+                file_put_contents(TMP_DIR . $b3c28ce8f38cc88b3954fadda9ca6553 . '_cache_properties', json_encode($d66f371f212188b56889e732be18574e), LOCK_EX);
             }
         }
     }
@@ -31,7 +31,7 @@ function D8F3dD4bC65E6709e5E2EB671F7D1957($Ee7b5cc02de6cbe26d51f0694f2fda23)
             }
         }
     }
-    file_put_contents(TMP_DIR . 'categories_bouq', serialize($e2e689b4a1e875eca74e2b9e49947fcc), LOCK_EX);
+    file_put_contents(TMP_DIR . 'categories_bouq', json_encode($e2e689b4a1e875eca74e2b9e49947fcc), LOCK_EX);
 }
 function b60a43461B635E2E0374015275d10C6F()
 {

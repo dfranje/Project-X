@@ -90,7 +90,10 @@ class cd89785224751CCA8017139dAF9e891E
     {
         if (CACHE_STREAMS) {
             if (file_exists(TMP_DIR . $ba85d77d367dcebfcc2a3db9e83bb581 . '_cacheStream') && time() - filemtime(TMP_DIR . $ba85d77d367dcebfcc2a3db9e83bb581 . '_cacheStream') <= CACHE_STREAMS_TIME) {
-                return unserialize(file_get_contents(TMP_DIR . $ba85d77d367dcebfcc2a3db9e83bb581 . '_cacheStream'));
+                $cachedStream = json_decode(file_get_contents(TMP_DIR . $ba85d77d367dcebfcc2a3db9e83bb581 . '_cacheStream'), true);
+                if (is_array($cachedStream)) {
+                    return $cachedStream;
+                }
             }
         }
         $output = array();
@@ -109,7 +112,7 @@ class cd89785224751CCA8017139dAF9e891E
             $output['info'] = $Cb08b127bfe426d7f3ccbd3e38f05471;
             $output['servers'] = $f9b9c9baaec5b82b03b15c6eb07ec8f9;
             if (CACHE_STREAMS) {
-                file_put_contents(TMP_DIR . $ba85d77d367dcebfcc2a3db9e83bb581 . '_cacheStream', serialize($output), LOCK_EX);
+                file_put_contents(TMP_DIR . $ba85d77d367dcebfcc2a3db9e83bb581 . '_cacheStream', json_encode($output), LOCK_EX);
             }
         }
         return !empty($output) ? $output : false;
@@ -363,15 +366,16 @@ class cd89785224751CCA8017139dAF9e891E
             } else {
                 $a8df9f055e91a1e9240230b69af85555['active_cons'] = 'N/A';
             }
-            if (file_exists(TMP_DIR . 'user_output' . $a8df9f055e91a1e9240230b69af85555['id'])) {
-                $a8df9f055e91a1e9240230b69af85555['output_formats'] = unserialize(file_get_contents(TMP_DIR . 'user_output' . $a8df9f055e91a1e9240230b69af85555['id']));
+            $Da5c9e3b1f6a74c8d0e2b4a6c8f0d2e4 = file_exists(TMP_DIR . 'user_output' . $a8df9f055e91a1e9240230b69af85555['id']) ? json_decode(file_get_contents(TMP_DIR . 'user_output' . $a8df9f055e91a1e9240230b69af85555['id']), true) : null;
+            if (is_array($Da5c9e3b1f6a74c8d0e2b4a6c8f0d2e4)) {
+                $a8df9f055e91a1e9240230b69af85555['output_formats'] = $Da5c9e3b1f6a74c8d0e2b4a6c8f0d2e4;
             } else {
                 self::$ipTV_db->query('SELECT *
                                     FROM `access_output` t1
                                     INNER JOIN `user_output` t2 ON t1.access_output_id = t2.access_output_id
                                     WHERE t2.user_id = \'%d\'', $a8df9f055e91a1e9240230b69af85555['id']);
                 $a8df9f055e91a1e9240230b69af85555['output_formats'] = self::$ipTV_db->c126fd559932f625CDF6098D86C63880(true, 'output_key');
-                file_put_contents(TMP_DIR . 'user_output' . $a8df9f055e91a1e9240230b69af85555['id'], serialize($a8df9f055e91a1e9240230b69af85555['output_formats']), LOCK_EX);
+                file_put_contents(TMP_DIR . 'user_output' . $a8df9f055e91a1e9240230b69af85555['id'], json_encode($a8df9f055e91a1e9240230b69af85555['output_formats']), LOCK_EX);
             }
             $a8df9f055e91a1e9240230b69af85555['con_isp_name'] = $a8df9f055e91a1e9240230b69af85555['con_isp_type'] = null;
             $a8df9f055e91a1e9240230b69af85555['isp_is_server'] = $a8df9f055e91a1e9240230b69af85555['isp_violate'] = 0;
@@ -457,7 +461,10 @@ class cd89785224751CCA8017139dAF9e891E
         if (!is_array($a9b4c615c3623cb531f93f87f402ccdc)) {
             $a9b4c615c3623cb531f93f87f402ccdc = json_decode($a9b4c615c3623cb531f93f87f402ccdc, true);
         }
-        $output = unserialize(file_get_contents(TMP_DIR . 'categories_bouq'));
+        $output = json_decode(file_get_contents(TMP_DIR . 'categories_bouq'), true);
+        if (!is_array($output)) {
+            return true;
+        }
         foreach ($a9b4c615c3623cb531f93f87f402ccdc as $A4d6fb6268124336b7497e2f7283d227) {
             if (isset($output[$A4d6fb6268124336b7497e2f7283d227])) {
                 if (in_array($Fe9028a70727ba5f6b7129f9352b020c, $output[$A4d6fb6268124336b7497e2f7283d227])) {

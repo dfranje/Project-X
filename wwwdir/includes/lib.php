@@ -147,7 +147,7 @@ class A78Bf8d35765BE2408c50712ce7a43AD
     {
         $movie_properties = array();
         if (file_exists(TMP_DIR . $ba85d77d367dcebfcc2a3db9e83bb581 . '_cache_properties')) {
-            $movie_properties = unserialize(file_get_contents(TMP_DIR . $ba85d77d367dcebfcc2a3db9e83bb581 . '_cache_properties'));
+            $movie_properties = json_decode(file_get_contents(TMP_DIR . $ba85d77d367dcebfcc2a3db9e83bb581 . '_cache_properties'), true);
         }
         return isset($movie_properties) && is_array($movie_properties) ? $movie_properties : array();
     }
