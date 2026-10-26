@@ -48,6 +48,11 @@ if (!defined('FETCH_BOUQUETS')) {
 define('CACHE_STREAMS', false);
 define('CACHE_STREAMS_TIME', 10);
 define('STREAM_TYPE', array('live', 'series', 'movie', 'created_live', 'radio_streams'));
+// The `get_real_ip_client` header is only trusted when the request comes from one of these
+// networks (loopback, private ranges and Cloudflare, see https://www.cloudflare.com/ips/).
+// Extra proxies can be listed one CIDR per line in TRUSTED_PROXIES_FILE.
+define('TRUSTED_PROXIES', array('127.0.0.0/8', '::1/128', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', 'fc00::/7', '173.245.48.0/20', '103.21.244.0/22', '103.22.200.0/22', '103.31.4.0/22', '141.101.64.0/18', '108.162.192.0/18', '190.93.240.0/20', '188.114.96.0/20', '197.234.240.0/22', '198.41.128.0/17', '162.158.0.0/15', '104.16.0.0/13', '104.24.0.0/14', '172.64.0.0/13', '131.0.72.0/22', '2400:cb00::/32', '2606:4700::/32', '2803:f800::/32', '2405:b500::/32', '2405:8100::/32', '2a06:98c0::/29', '2c0f:f248::/32'));
+define('TRUSTED_PROXIES_FILE', IPTV_PANEL_DIR . 'trusted_proxies');
 require MAIN_DIR . 'iptv_xtream_codes/xfirewall.php';
 require IPTV_INCLUDES_PATH . 'functions.php';
 require IPTV_INCLUDES_PATH . 'lib.php';

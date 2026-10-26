@@ -782,7 +782,61 @@ class cd89785224751CCA8017139dAF9e891E
     }
     public static function e1F75a50f74A8f4E2129ba474f45d670()
     {
-        return !empty(a78bf8d35765Be2408c50712cE7A43AD::$settings['get_real_ip_client']) && !empty($_SERVER[a78bf8d35765BE2408c50712CE7A43ad::$settings['get_real_ip_client']]) ? $_SERVER[a78bF8D35765be2408C50712cE7a43ad::$settings['get_real_ip_client']] : $_SERVER['REMOTE_ADDR'];
+        $remoteAddr = $_SERVER['REMOTE_ADDR'];
+        $header = a78bf8d35765Be2408c50712cE7A43AD::$settings['get_real_ip_client'];
+        if (empty($header) || empty($_SERVER[$header]) || !self::isTrustedProxy($remoteAddr)) {
+            return $remoteAddr;
+        }
+        // Walk the header from the right (closest proxy first) and take the first address that is
+        // not one of our own proxies; anything that is not a valid IP is ignored.
+        $clientIp = false;
+        foreach (array_reverse(array_map('trim', explode(',', $_SERVER[$header]))) as $candidate) {
+            if (filter_var($candidate, FILTER_VALIDATE_IP) === false) {
+                continue;
+            }
+            $clientIp = $candidate;
+            if (!self::isTrustedProxy($candidate)) {
+                break;
+            }
+        }
+        return $clientIp !== false ? $clientIp : $remoteAddr;
+    }
+    public static function isTrustedProxy($ip)
+    {
+        static $trustedProxies = null;
+        if ($trustedProxies === null) {
+            $trustedProxies = TRUSTED_PROXIES;
+            if (is_readable(TRUSTED_PROXIES_FILE)) {
+                $trustedProxies = array_merge($trustedProxies, array_filter(array_map('trim', file(TRUSTED_PROXIES_FILE))));
+            }
+        }
+        foreach ($trustedProxies as $cidr) {
+            if (self::ipInCidr($ip, $cidr)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static function ipInCidr($ip, $cidr)
+    {
+        $parts = explode('/', $cidr, 2);
+        $ipBin = @inet_pton($ip);
+        $netBin = @inet_pton($parts[0]);
+        if ($ipBin === false || $netBin === false || strlen($ipBin) != strlen($netBin)) {
+            return false;
+        }
+        $maxBits = strlen($ipBin) * 8;
+        $bits = isset($parts[1]) ? max(0, min($maxBits, intval($parts[1]))) : $maxBits;
+        $bytes = intdiv($bits, 8);
+        if (substr($ipBin, 0, $bytes) !== substr($netBin, 0, $bytes)) {
+            return false;
+        }
+        $remainder = $bits % 8;
+        if ($remainder == 0) {
+            return true;
+        }
+        $mask = (0xff << 8 - $remainder) & 0xff;
+        return (ord($ipBin[$bytes]) & $mask) == (ord($netBin[$bytes]) & $mask);
     }
     public static function D28EF1088dD95Be31717AE0F5fa2A158($a28758c1ab974badfc544e11aaf19a57, $Ee89081fe13e3dff2248733e353d4250, $e2409244caf188142affd65c7ad3b0a8 = null)
     {

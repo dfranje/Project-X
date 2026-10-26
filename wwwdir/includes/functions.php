@@ -100,7 +100,7 @@ function D9F93B7c177e377D0BbfE315eAeAE505()
         return;
     }
     $f4889efa84e1f2e30e5e9780973f68cb = Cd89785224751ccA8017139DAF9E891e::E1f75a50F74a8f4E2129BA474f45D670();
-    if (empty($f4889efa84e1f2e30e5e9780973f68cb) || in_array($f4889efa84e1f2e30e5e9780973f68cb, Cd89785224751ccA8017139Daf9E891e::AB69E1103c96ee33fE21A6453d788925())) {
+    if (filter_var($f4889efa84e1f2e30e5e9780973f68cb, FILTER_VALIDATE_IP) === false || in_array($f4889efa84e1f2e30e5e9780973f68cb, Cd89785224751ccA8017139Daf9E891e::AB69E1103c96ee33fE21A6453d788925())) {
         return;
     }
     $d07f0d12ec3e6a615c9e2128f53c0021 = array_filter(array_unique(explode(',', A78Bf8d35765bE2408C50712Ce7A43aD::$settings['flood_ips_exclude'])));
@@ -116,7 +116,7 @@ function D9F93B7c177e377D0BbfE315eAeAE505()
             ++$Fa6f56ee50a6331b464fdee0f2d47c94['requests'];
             if ($Fa6f56ee50a6331b464fdee0f2d47c94['requests'] >= $Fb18c9917ee3e7aa4417a4f60504a9b5) {
                 $f566700a43ee8e1f0412fe10fbdf03df->query('INSERT INTO `blocked_ips` (`ip`,`notes`,`date`) VALUES(\'%s\',\'%s\',\'%d\')', $f4889efa84e1f2e30e5e9780973f68cb, 'FLOOD ATTACK', time());
-                A7785208D901bEa02B65446067CFd0B3::F320B6A3920944D8a18D7949c8abAcE4(array_keys(a78BF8D35765be2408c50712cE7A43ad::$StreamingServers), "sudo /sbin/iptables -A INPUT -s {$f4889efa84e1f2e30e5e9780973f68cb} -j DROP");
+                A7785208D901bEa02B65446067CFd0B3::F320B6A3920944D8a18D7949c8abAcE4(array_keys(a78BF8D35765be2408c50712cE7A43ad::$StreamingServers), 'sudo /sbin/iptables -A INPUT -s ' . escapeshellarg($f4889efa84e1f2e30e5e9780973f68cb) . ' -j DROP');
                 unlink($b63b894b2f9b5aabe135ef4a17f2aed8);
                 return;
             }
