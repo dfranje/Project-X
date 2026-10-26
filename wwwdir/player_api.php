@@ -137,7 +137,7 @@ if (!empty(A78bF8d35765BE2408c50712Ce7A43aD::$request['username']) && !empty(A78
                     $f566700a43ee8e1f0412fe10fbdf03df->query('SELECT `channel_id`,`epg_id` FROM `streams` WHERE `id` = \'%d\' AND epg_id IS NOT NULL', $A7386eca40c08bf499c3668f497f7653);
                     if ($f566700a43ee8e1f0412fe10fbdf03df->D1e5ce3B87BB868b9e6EFD39aa355a4f() > 0) {
                         $faca5f1c4c9dec5b739d7a905876b0cd = $f566700a43ee8e1f0412fe10fbdf03df->F1Ed191d78470660EDff4a007696BC1F();
-                        $f566700a43ee8e1f0412fe10fbdf03df->FC53E22AE7ee3bB881cd95fb606914F0("SELECT *,UNIX_TIMESTAMP(start) as start_timestamp, UNIX_TIMESTAMP(end) as stop_timestamp  FROM `epg_data` WHERE `epg_id` = '{$faca5f1c4c9dec5b739d7a905876b0cd['epg_id']}' AND `channel_id` = '{$faca5f1c4c9dec5b739d7a905876b0cd['channel_id']}' AND ('" . date('Y-m-d H:i:00') . '\' BETWEEN `start` AND `end` OR `start` >= \'' . date('Y-m-d H:i:00') . "') ORDER BY `start` LIMIT {$Ffb14fe8aab74bc4aab279b42393475f}");
+                        $f566700a43ee8e1f0412fe10fbdf03df->query("SELECT *,UNIX_TIMESTAMP(start) as start_timestamp, UNIX_TIMESTAMP(end) as stop_timestamp  FROM `epg_data` WHERE `epg_id` = '%s' AND `channel_id` = '%s' AND ('" . date('Y-m-d H:i:00') . "' BETWEEN `start` AND `end` OR `start` >= '" . date('Y-m-d H:i:00') . "') ORDER BY `start` LIMIT %d", $faca5f1c4c9dec5b739d7a905876b0cd['epg_id'], $faca5f1c4c9dec5b739d7a905876b0cd['channel_id'], $Ffb14fe8aab74bc4aab279b42393475f);
                         if ($f566700a43ee8e1f0412fe10fbdf03df->d1E5ce3b87Bb868B9e6Efd39AA355a4F() > 0) {
                             $output['epg_listings'] = $f566700a43ee8e1f0412fe10fbdf03df->c126fd559932f625CDf6098d86c63880();
                         }

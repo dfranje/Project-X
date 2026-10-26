@@ -33,7 +33,13 @@ if (!empty(a78BF8d35765be2408C50712CE7A43Ad::$request['username']) && !empty(a78
                 $Bbb7af082729bf21d97453279778fdee[] = $c72d66b481d02f854f0bef67db92a547['epg_id'];
             }
             $Bbb7af082729bf21d97453279778fdee = array_unique($Bbb7af082729bf21d97453279778fdee);
-            $b0f1eb357ed72245e03dfe6268912497 = mysqli_query($f566700a43ee8e1f0412fe10fbdf03df->dbh, 'SELECT * FROM `epg_data` WHERE `epg_id` IN(' . implode(',', $Bbb7af082729bf21d97453279778fdee) . ') AND `start` BETWEEN \'' . date('Y-m-d H:i:00', strtotime("-{$cc787cb8dcdf96d84151c7a73aa831bf} day")) . '\' AND \'' . date('Y-m-d H:i:00', strtotime("+{$E9bd18f1acef0191a216cfc27a1fcfce} day")) . '\'', MYSQLI_USE_RESULT);
+            // epg_id is a string column; escape and quote each value instead of
+            // interpolating it raw into the IN() list.
+            $Ebg1d2c3a4b5968778695a4b3c2d1e0f = array();
+            foreach ($Bbb7af082729bf21d97453279778fdee as $Ebg0f1e2d3c4b5a697887766554433221) {
+                $Ebg1d2c3a4b5968778695a4b3c2d1e0f[] = '\'' . $f566700a43ee8e1f0412fe10fbdf03df->escape($Ebg0f1e2d3c4b5a697887766554433221) . '\'';
+            }
+            $b0f1eb357ed72245e03dfe6268912497 = mysqli_query($f566700a43ee8e1f0412fe10fbdf03df->dbh, 'SELECT * FROM `epg_data` WHERE `epg_id` IN(' . implode(',', $Ebg1d2c3a4b5968778695a4b3c2d1e0f) . ') AND `start` BETWEEN \'' . date('Y-m-d H:i:00', strtotime('-' . intval($cc787cb8dcdf96d84151c7a73aa831bf) . ' day')) . '\' AND \'' . date('Y-m-d H:i:00', strtotime('+' . intval($E9bd18f1acef0191a216cfc27a1fcfce) . ' day')) . '\'', MYSQLI_USE_RESULT);
             //f1bcbc646b7caf73aa5b0b71be389f78:
             while ($c72d66b481d02f854f0bef67db92a547 = mysqli_fetch_assoc($b0f1eb357ed72245e03dfe6268912497)) {
                 $E4416ae8f96620daee43ac43f9515200 = htmlspecialchars(base64_decode($c72d66b481d02f854f0bef67db92a547['title']), ENT_XML1 | ENT_QUOTES | ENT_DISALLOWED, 'UTF-8');

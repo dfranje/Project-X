@@ -4,6 +4,7 @@
 /*Rev:21.09.19r0-goto Php7.2.4 L:10.2*/
 function c91B44fb481658FAc7eA786479a0bFE2($Ca434bcc380e9dbd2a3a588f6c32d84f, &$b0f1eb357ed72245e03dfe6268912497)
 {
+    global $f566700a43ee8e1f0412fe10fbdf03df;
     if (file_exists($Ca434bcc380e9dbd2a3a588f6c32d84f)) {
         $Ab9f45b38498c3a010f3c4276ad5767c = fopen($Ca434bcc380e9dbd2a3a588f6c32d84f, 'r');
         while (!feof($Ab9f45b38498c3a010f3c4276ad5767c)) {
@@ -12,6 +13,10 @@ function c91B44fb481658FAc7eA786479a0bFE2($Ca434bcc380e9dbd2a3a588f6c32d84f, &$b
                 break;
             }
             $bb85be39ea05b75c9bffeff236bd9355 = json_decode(base64_decode($bb85be39ea05b75c9bffeff236bd9355), true);
+            // Escape every field: these rows carry client-supplied data
+            // (query_string, user_agent, user_ip) and are concatenated into a
+            // raw INSERT, so without escaping they are a SQL-injection vector.
+            $bb85be39ea05b75c9bffeff236bd9355 = array_map(array($f566700a43ee8e1f0412fe10fbdf03df, 'escape'), (array) $bb85be39ea05b75c9bffeff236bd9355);
             $b0f1eb357ed72245e03dfe6268912497 .= '(\'' . $bb85be39ea05b75c9bffeff236bd9355['stream_id'] . '\',\'' . $bb85be39ea05b75c9bffeff236bd9355['user_id'] . '\',\'' . $bb85be39ea05b75c9bffeff236bd9355['action'] . '\',\'' . $bb85be39ea05b75c9bffeff236bd9355['query_string'] . '\',\'' . $bb85be39ea05b75c9bffeff236bd9355['user_agent'] . '\',\'' . $bb85be39ea05b75c9bffeff236bd9355['user_ip'] . '\',\'' . $bb85be39ea05b75c9bffeff236bd9355['extra_data'] . '\',\'' . $bb85be39ea05b75c9bffeff236bd9355['time'] . '\'),';
         }
         fclose($Ab9f45b38498c3a010f3c4276ad5767c);
