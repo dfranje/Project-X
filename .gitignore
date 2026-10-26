@@ -1,0 +1,9 @@
+# TLS private keys and certificates must never be committed.
+# They are generated on first start (see start_services.sh).
+nginx/conf/server.key
+nginx/conf/server.crt
+nginx/conf/server.csr
+
+# Runtime / process files
+*.pid
+php/*.pid
