@@ -12,13 +12,29 @@ class cd89785224751CCA8017139dAF9e891E
     }
     public static function e8e54de10433EB446982a4Af8ADea379($d38a1c3d822bdbbd61f649f33212ebde, $c5f97e03cbf94a57a805526a8288042f)
     {
+        // All of these fields come from a signal file and must not be able to
+        // break out of the shell command or the ffmpeg filtergraph.
         if (empty($d38a1c3d822bdbbd61f649f33212ebde['xy_offset'])) {
-            $d43f5adb4da33d3ded5cecc9d0c0b4c7 = rand(150, 380);
-            $Cca4c808b355e55e72f3bfb3c6603659 = rand(110, 250);
+            $overlayX = rand(150, 380);
+            $overlayY = rand(110, 250);
         } else {
-            list($d43f5adb4da33d3ded5cecc9d0c0b4c7, $Cca4c808b355e55e72f3bfb3c6603659) = explode('x', $d38a1c3d822bdbbd61f649f33212ebde['xy_offset']);
+            $xy = explode('x', $d38a1c3d822bdbbd61f649f33212ebde['xy_offset']);
+            $overlayX = intval($xy[0]);
+            $overlayY = isset($xy[1]) ? intval($xy[1]) : 0;
         }
-        passthru(FFMPEG_PATH . ' -nofix_dts -fflags +igndts -copyts -vsync 0 -nostats -nostdin -hide_banner -loglevel quiet -y -i "' . STREAMS_PATH . $c5f97e03cbf94a57a805526a8288042f . '" -filter_complex "drawtext=fontfile=' . FFMPEG_FONTS_PATH . ":text='{$d38a1c3d822bdbbd61f649f33212ebde['message']}':fontsize={$d38a1c3d822bdbbd61f649f33212ebde['font_size']}:x={$d43f5adb4da33d3ded5cecc9d0c0b4c7}:y={$Cca4c808b355e55e72f3bfb3c6603659}:fontcolor={$d38a1c3d822bdbbd61f649f33212ebde['font_color']}\" -map 0 -vcodec libx264 -preset ultrafast -acodec copy -scodec copy -mpegts_flags +initial_discontinuity -mpegts_copyts 1 -f mpegts -");
+        $fontSize = isset($d38a1c3d822bdbbd61f649f33212ebde['font_size']) ? intval($d38a1c3d822bdbbd61f649f33212ebde['font_size']) : 20;
+        // A named colour, or #RRGGBB / 0xRRGGBB, optionally with an @alpha suffix.
+        // Anything else (e.g. a value containing ':' or a quote) is rejected.
+        $fontColor = isset($d38a1c3d822bdbbd61f649f33212ebde['font_color']) && preg_match('/^(#|0x)?[0-9A-Za-z@.]+$/', $d38a1c3d822bdbbd61f649f33212ebde['font_color']) ? $d38a1c3d822bdbbd61f649f33212ebde['font_color'] : 'white';
+        // The overlay text is written to a temp file and read with
+        // expansion=none, so its contents never reach the filtergraph parser or
+        // the shell and are rendered literally.
+        $message = isset($d38a1c3d822bdbbd61f649f33212ebde['message']) ? (string) $d38a1c3d822bdbbd61f649f33212ebde['message'] : '';
+        $textFile = tempnam(TMP_DIR, 'drawtext_');
+        file_put_contents($textFile, $message);
+        $filter = 'drawtext=fontfile=' . FFMPEG_FONTS_PATH . ':textfile=' . $textFile . ':expansion=none:fontsize=' . $fontSize . ':x=' . $overlayX . ':y=' . $overlayY . ':fontcolor=' . $fontColor;
+        passthru(escapeshellarg(FFMPEG_PATH) . ' -nofix_dts -fflags +igndts -copyts -vsync 0 -nostats -nostdin -hide_banner -loglevel quiet -y -i ' . escapeshellarg(STREAMS_PATH . $c5f97e03cbf94a57a805526a8288042f) . ' -filter_complex ' . escapeshellarg($filter) . ' -map 0 -vcodec libx264 -preset ultrafast -acodec copy -scodec copy -mpegts_flags +initial_discontinuity -mpegts_copyts 1 -f mpegts -');
+        @unlink($textFile);
         return true;
     }
     public static function B20C5d64B4C7dBfAffeA9f96934138A4()
