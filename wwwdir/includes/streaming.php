@@ -323,7 +323,7 @@ class cd89785224751CCA8017139dAF9e891E
         if (self::$ipTV_db->d1e5Ce3b87BB868b9E6EfD39Aa355a4F() > 0) {
             $a8df9f055e91a1e9240230b69af85555 = self::$ipTV_db->F1eD191d78470660eDFf4A007696bC1F();
             if (A78Bf8D35765be2408C50712cE7A43Ad::$settings['case_sensitive_line'] == 1 && !empty($f6806488699d3315dc5dc1e27a401b3e) && !empty($A6a4b4fbceaf0ab570c374f4faaa990f)) {
-                if ($a8df9f055e91a1e9240230b69af85555['username'] != $f6806488699d3315dc5dc1e27a401b3e || $a8df9f055e91a1e9240230b69af85555['password'] != $A6a4b4fbceaf0ab570c374f4faaa990f) {
+                if ($a8df9f055e91a1e9240230b69af85555['username'] !== (string) $f6806488699d3315dc5dc1e27a401b3e || $a8df9f055e91a1e9240230b69af85555['password'] !== (string) $A6a4b4fbceaf0ab570c374f4faaa990f) {
                     return false;
                 }
             }

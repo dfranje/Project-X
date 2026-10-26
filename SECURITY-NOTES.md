@@ -32,18 +32,52 @@ These ship with the same value in every install and should be changed:
 - `live_streaming_pass` and `api_pass` in the `settings` table — both are
   empty by default and gate the admin/streaming APIs (see SECURITY review).
 
-## Still outstanding (not addressed in these commits)
+## Password storage (why line passwords are not hashed)
 
-- `nginx/sbin/nginx` must be rebuilt against a current OpenSSL to fix
-  Heartbleed (see `nginx/REBUILD.md`); the TLS config change alone does not.
-- `system_api.php` exposes shell-execution actions; passwords are stored in
-  clear text. These are tracked as later stages of the review.
+`users.password` (subscriber "lines") is **not** a hashable secret in this
+architecture: the plaintext password travels in every stream URL
+(`/live/<user>/<pass>/<id>.ts`), is handed back to MAG/Enigma devices, and is
+embedded in generated M3U playlists. Replacing it with a one-way hash would
+break streaming authentication across every client, so it is deliberately
+left as-is here. What was hardened instead: the case-sensitive login rechecks
+in `get.php` and `streaming.php` now use strict (`===`) comparison, which
+removes a PHP type-juggling edge case (e.g. `"0e1" == "0e2"`).
+
+The password that *should* be hashed is the admin/reseller panel login
+(`reg_users.password`). That login lives in the separate admin-panel
+application, **not** in this repository (this repo is the client/streaming
+API, crons and tools), so there is nothing to convert here. When working on
+the admin panel, store `reg_users.password` with `password_hash()` and verify
+with `password_verify()`.
+
+## Hardcoded secrets — rotate on the servers (not changeable in-repo)
+
+These ship with the same value in every install and should be changed, but
+changing them in the repo would break existing installs, so they are an
+operator action:
+
+- `KEY_CRYPT` and `CONFIG_CRYPT_KEY` in `wwwdir/init.php` — used to
+  "encrypt" the `config` file (DB credentials). The cipher is a repeating-key
+  XOR, so the DB credentials are effectively recoverable by anyone who has
+  both the `config` file and this public key. Rotating `CONFIG_CRYPT_KEY`
+  requires re-writing each server's `config` file with the new key.
+- Database password in the `config` file.
+- `live_streaming_pass` and `api_pass` in the `settings` table — both are
+  empty by default and gate the admin/streaming APIs.
 
 ## Done in later stages
 
+- `nginx/sbin/nginx` rebuilt against OpenSSL 3.5.5 — Heartbleed fixed
+  (see `nginx/REBUILD.md`).
 - `system_api.php`: constant-time API auth; `getURL` shell-injection fixed.
 - All calls to the defunct `xtream-codes.com` were removed: the `cloud_ips`
   allowlist fetch, the `api.xtream-codes.com` ISP/VPN lookup (which leaked
   client IP + user-agent), the `gt_bl.php` blacklist fetch (which fed
   `unserialize()` — PHP object injection), and the `GeoLite2.mmdb` download.
   The shipped GeoIP database is used as-is; update it from MaxMind.
+- ffmpeg drawtext overlay: command/filter injection fixed.
+- tmp caches: `unserialize()` replaced with JSON (object-injection removed).
+- `api.php`: `user_data` column whitelist (mass-assignment fixed).
+- SQL: escaped/parameterized the query sites that bypassed the escape layer
+  (`crl_sync.php`, `xmltv.php`, `portal.php`, `player_api.php`). A full PDO
+  migration of the custom query layer is still a separate, larger effort.
