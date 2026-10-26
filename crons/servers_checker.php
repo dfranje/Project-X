@@ -59,8 +59,9 @@ $b491382721126ed130f32155d616b806 = array('total_ram' => $E747328102236137f1cbe6
 $A752e3fbe7ed63f10be97634c544dc8f = array_values(array_unique(array_map('trim', explode('
 ', shell_exec('ip -4 addr | grep -oP \'(?<=inet\\s)\\d+(\\.\\d+){3}\'')))));
 $f566700a43ee8e1f0412fe10fbdf03df->query('UPDATE `streaming_servers` SET `server_hardware` = \'%s\',`whitelist_ips` = \'%s\' WHERE `id` = \'%d\'', json_encode($b491382721126ed130f32155d616b806), json_encode($A752e3fbe7ed63f10be97634c544dc8f), SERVER_ID);
-if (!file_exists(GEOIP2_FILENAME) || 86400 <= time() - filemtime(GEOIP2_FILENAME)) {
-    passthru('wget --no-check-certificate --user-agent "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0" --timeout=40 "http://downloads.xtream-codes.com/v2/GeoLite2.mmdb" -O "' . GEOIP2_FILENAME . '" -q 2>/dev/null');
-    touch(GEOIP2_FILENAME);
-}
+// The daily GeoLite2.mmdb download from downloads.xtream-codes.com was removed:
+// the host is defunct and it was fetched over plain HTTP with
+// --no-check-certificate, so a hijacked domain could serve a tampered database.
+// The database shipped with the panel is used as-is; to update it, fetch a
+// current GeoLite2-Country.mmdb from MaxMind and replace GEOIP2_FILENAME.
 ?>

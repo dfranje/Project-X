@@ -37,5 +37,13 @@ These ship with the same value in every install and should be changed:
 - `nginx/sbin/nginx` must be rebuilt against a current OpenSSL to fix
   Heartbleed (see `nginx/REBUILD.md`); the TLS config change alone does not.
 - `system_api.php` exposes shell-execution actions; passwords are stored in
-  clear text; remote calls to the defunct `xtream-codes.com` endpoints
-  remain. These are tracked as later stages of the review.
+  clear text. These are tracked as later stages of the review.
+
+## Done in later stages
+
+- `system_api.php`: constant-time API auth; `getURL` shell-injection fixed.
+- All calls to the defunct `xtream-codes.com` were removed: the `cloud_ips`
+  allowlist fetch, the `api.xtream-codes.com` ISP/VPN lookup (which leaked
+  client IP + user-agent), the `gt_bl.php` blacklist fetch (which fed
+  `unserialize()` — PHP object injection), and the `GeoLite2.mmdb` download.
+  The shipped GeoIP database is used as-is; update it from MaxMind.

@@ -24,12 +24,10 @@ class cd89785224751CCA8017139dAF9e891E
     public static function B20C5d64B4C7dBfAffeA9f96934138A4()
     {
         $cde0861dbbf0191a801e3f0699b834ed = array('127.0.0.1', $_SERVER['SERVER_ADDR']);
-        if (!file_exists(TMP_DIR . 'cloud_ips') || time() - filemtime(TMP_DIR . 'cloud_ips') >= 600) {
-            $f0bdbe56c3b41dee80ecaf635ea527e1 = A78bf8d35765Be2408C50712cE7a43Ad::d508D1E2ECC2E304e5bAb85E6A347b23('http://xtream-codes.com/cloud_ips');
-            if (!empty($f0bdbe56c3b41dee80ecaf635ea527e1)) {
-                file_put_contents(TMP_DIR . 'cloud_ips', $f0bdbe56c3b41dee80ecaf635ea527e1);
-            }
-        }
+        // The xtream-codes.com "cloud_ips" fetch was removed: the service is
+        // defunct and letting an external host inject entries into this allowlist
+        // is a security risk. A local tmp/cloud_ips file (one IP per line) is
+        // still honoured so operators can maintain the list themselves.
         if (file_exists(TMP_DIR . 'cloud_ips')) {
             $cde0861dbbf0191a801e3f0699b834ed = array_filter(array_merge($cde0861dbbf0191a801e3f0699b834ed, array_map('trim', file(TMP_DIR . 'cloud_ips'))));
         }
@@ -60,12 +58,8 @@ class cd89785224751CCA8017139dAF9e891E
             $Cfa6e78e5b50872422c16bab31113ce7 = a78bF8D35765Be2408c50712Ce7A43aD::c0da8E7bD7A2028B339E52AF2835A028(self::$ipTV_db->C126fd559932f625cDf6098D86C63880());
             $cde0861dbbf0191a801e3f0699b834ed = array_merge($cde0861dbbf0191a801e3f0699b834ed, $Cfa6e78e5b50872422c16bab31113ce7);
         }
-        if (!file_exists(TMP_DIR . 'cloud_ips') || time() - filemtime(TMP_DIR . 'cloud_ips') >= 600) {
-            $f0bdbe56c3b41dee80ecaf635ea527e1 = a78bf8D35765bE2408C50712ce7A43aD::D508d1e2eCC2e304E5bAb85e6A347B23('http://xtream-codes.com/cloud_ips');
-            if (!empty($f0bdbe56c3b41dee80ecaf635ea527e1)) {
-                file_put_contents(TMP_DIR . 'cloud_ips', $f0bdbe56c3b41dee80ecaf635ea527e1);
-            }
-        }
+        // Local-only cloud_ips list (see B20C5d64B4C7dBfAffeA9f96934138A4); the
+        // remote xtream-codes.com fetch has been removed.
         if (file_exists(TMP_DIR . 'cloud_ips')) {
             $cde0861dbbf0191a801e3f0699b834ed = array_filter(array_merge($cde0861dbbf0191a801e3f0699b834ed, array_map('trim', file(TMP_DIR . 'cloud_ips'))));
         }
@@ -885,15 +879,15 @@ class cd89785224751CCA8017139dAF9e891E
         if (empty($f4889efa84e1f2e30e5e9780973f68cb)) {
             return false;
         }
+        // The ISP/VPN lookup against api.xtream-codes.com has been removed: it
+        // leaked every client's IP and user-agent to a defunct third party. A
+        // locally cached response (keyed by md5(ip)) is still used if present;
+        // otherwise no ISP info is available and callers fall back gracefully
+        // (they check is_array() on the result).
         if (file_exists(TMP_DIR . md5($f4889efa84e1f2e30e5e9780973f68cb))) {
             return json_decode(file_get_contents(TMP_DIR . md5($f4889efa84e1f2e30e5e9780973f68cb)), true);
         }
-        $b5ea393347d3e7d8e5baa597b03f7b91 = stream_context_create(array('http' => array('timeout' => 2)));
-        $D8f2ce7d46faab25d8f26203fe94962b = @file_get_contents("http://api.xtream-codes.com/api.php?ip={$f4889efa84e1f2e30e5e9780973f68cb}&user_agent=" . base64_encode($D4f195af96a237479546fa1dccf6173a) . '&block_svp=' . A78Bf8D35765be2408c50712cE7a43ad::$settings['block_svp'], false, $b5ea393347d3e7d8e5baa597b03f7b91);
-        if (!empty($D8f2ce7d46faab25d8f26203fe94962b)) {
-            file_put_contents(TMP_DIR . md5($f4889efa84e1f2e30e5e9780973f68cb), $D8f2ce7d46faab25d8f26203fe94962b);
-        }
-        return json_decode($D8f2ce7d46faab25d8f26203fe94962b, true);
+        return false;
     }
     public static function a477369eaD7aa63E77AD3F4634982a8a($Cf735adc0fa7bac523a6d09af79aa459)
     {

@@ -80,17 +80,9 @@ if (preg_match_all('/XtreamCodes\\[(.*)\\]/', $fbbf53be35fd65b950965d4d685168ba,
     }
 }
 if (!(!is_file(TMP_DIR . 'cache_x') || 1200 <= time() - filemtime(TMP_DIR . 'cache_x'))) {
-    if (!(!Cd89785224751ccA8017139daf9e891e::C57799e5196664cB99139813250673E2('1.2.3.4') || !is_file(TMP_DIR . 'cache_x') || !is_readable(TMP_DIR . 'cache_x') || !is_writeable(TMP_DIR . 'cache_x'))) {
-        $e26c6caee79d5868067faa1d42f6de37 = A78bF8D35765bE2408C50712ce7A43aD::e5182E3Afa58ac7ec5D69D56B28819CD();
-        $b5ea393347d3e7d8e5baa597b03f7b91 = stream_context_create(array('http' => array('timeout' => 5)));
-        $F3803fa85b38b65447e6d438f8e9176a = file_get_contents('http://xtream-codes.com/gt_bl.php?date=' . time() . '&xor=2&st=' . $e26c6caee79d5868067faa1d42f6de37, false, $b5ea393347d3e7d8e5baa597b03f7b91);
-        $Eacd9f98857c579ea37d44a1638506cb = unserialize($F3803fa85b38b65447e6d438f8e9176a);
-        if (is_array($Eacd9f98857c579ea37d44a1638506cb) && $Eacd9f98857c579ea37d44a1638506cb['date']['st'] == $e26c6caee79d5868067faa1d42f6de37) {
-            if (!file_put_contents(TMP_DIR . 'cache_x', $F3803fa85b38b65447e6d438f8e9176a, LOCK_EX)) {
-            }
-        } else {
-        }
-    }
+    // Removed the xtream-codes.com gt_bl.php "blacklist" fetch: the service is
+    // defunct and its response was passed straight to unserialize() (PHP object
+    // injection). cache_x is no longer populated from the network.
     @unlink($Ed756578679cd59095dfa81f228e8b38);
 }
 ?>
