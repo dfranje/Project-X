@@ -81,3 +81,9 @@ operator action:
 - SQL: escaped/parameterized the query sites that bypassed the escape layer
   (`crl_sync.php`, `xmltv.php`, `portal.php`, `player_api.php`). A full PDO
   migration of the custom query layer is still a separate, larger effort.
+- Repaired decode-dropped `goto` labels in `streaming.php`,
+  `clients_live.php` and `geo/Decoder.php` — the backend previously could not
+  even be included (compile fatal); it now passes `php -l` everywhere and
+  boots via `init.php`.
+- `system_api.php` `print_image`: fixed arbitrary file read (restricted to
+  MOVIES_IMAGES). `xplugin.php` screen upload: now requires a real image.
