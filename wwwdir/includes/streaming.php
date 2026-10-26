@@ -210,6 +210,7 @@ class cd89785224751CCA8017139dAF9e891E
                         }
                         goto fb8512650313d24ebbda99a7e541af4a;
                     }
+                    fb8512650313d24ebbda99a7e541af4a:
                     if (a78bF8D35765BE2408c50712Ce7A43ad::$settings['online_capacity_interval'] != 0) {
                         file_put_contents(TMP_DIR . 'servers_capacity', json_encode($Cd4eabf7ecf553f46c17f0bd5a382c46), LOCK_EX);
                     }
@@ -247,7 +248,6 @@ class cd89785224751CCA8017139dAF9e891E
                                                     Cc791c1e1088ae7c9c260d4ad4bd0ff3:
                                                     $B0e9c71612dc0f9cbfac184b33ec7cae = $e951d0b9610ba3624d06def5a541cb17;
                                                     break;
-                                                    goto D60a6b55cfd678a3cab0a9b2bb62cc0b;
                                                 }
                                                 c3d2f0f5bac224106a3c47723c91674f:
                                                 if (!in_array($Cf735adc0fa7bac523a6d09af79aa459, a78Bf8d35765Be2408C50712Ce7A43ad::$StreamingServers[$e951d0b9610ba3624d06def5a541cb17]['isp_names'])) {
@@ -258,7 +258,6 @@ class cd89785224751CCA8017139dAF9e891E
                                                         acfe9d9c88cfcc8196451a8ee08ffdbe:
                                                         $B0e9c71612dc0f9cbfac184b33ec7cae = $e951d0b9610ba3624d06def5a541cb17;
                                                         break;
-                                                        goto b5531bc8ac92447022ab49da65c2e7d0;
                                                     }
                                                     df1dab1529b7af4fa42d1ac9d461f6c7:
                                                 }
@@ -274,6 +273,7 @@ class cd89785224751CCA8017139dAF9e891E
                                 $B0e9c71612dc0f9cbfac184b33ec7cae = SERVER_ID;
                                 goto Abfdd728972a2798d5f98e139390ecf3;
                             }
+                            Abfdd728972a2798d5f98e139390ecf3:
                             if ($B0e9c71612dc0f9cbfac184b33ec7cae != SERVER_ID) {
                                 if ($a28758c1ab974badfc544e11aaf19a57 == 'live') {
                                     $D4a67bbd52a22a102a646011a4bec962 = $F1350a5569e4b73d2f9cb26483f2a0c1 == 'm3u8' ? 0 : time() + 6;
@@ -308,7 +308,6 @@ class cd89785224751CCA8017139dAF9e891E
             } else {
                 B4255ebb0d13ed6640b6609751c38bf6:
                 return in_array($ba85d77d367dcebfcc2a3db9e83bb581, $a65cbae81b158857c4230683ea812050);
-                goto a2519e01e648e11947db8d70937f4195;
             }
             return false;
         }

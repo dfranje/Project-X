@@ -174,6 +174,7 @@ class dD866CD266d22904Db08ceDe9C891eEb
                 goto D719ec0ad1c6145b99bdb76160879cd3;
             }
             }
+        D719ec0ad1c6145b99bdb76160879cd3:
         return $f725e0e4529c6709a60a12f47958cbc9;
     }
     private function c75187fBCAF407721d54B95aA5293fb7($e13ac89e162bcc9913e553b949f755b6)
@@ -198,6 +199,7 @@ class dD866CD266d22904Db08ceDe9C891eEb
                     $Ff876e96994aa5b09ce92e771efe2038 = 285 + $e604917258b158ba003c4d7352099362;
                     goto E34776511fb67c488687c4d1fb35f8c7;
                 }
+                E34776511fb67c488687c4d1fb35f8c7:
                 return array($Ff876e96994aa5b09ce92e771efe2038, $Edcf28ccdc0122ea787e348c040427ed + $Ae3234ddab2e42837c611f69b424ea66);
             }
         }
