@@ -3,7 +3,7 @@
 
 set_time_limit(0);
 require 'init.php';
-if (empty(A78BF8D35765Be2408C50712cE7a43aD::$request['password']) || a78bf8D35765bE2408c50712ce7A43aD::$request['password'] != a78Bf8D35765bE2408C50712CE7A43aD::$settings['live_streaming_pass']) {
+if (empty(a78Bf8D35765bE2408C50712CE7A43aD::$settings['live_streaming_pass']) || empty(A78BF8D35765Be2408C50712cE7a43aD::$request['password']) || !hash_equals((string) a78Bf8D35765bE2408C50712CE7A43aD::$settings['live_streaming_pass'], (string) a78bf8D35765bE2408c50712ce7A43aD::$request['password'])) {
     die;
 }
 $f4889efa84e1f2e30e5e9780973f68cb = $_SERVER['REMOTE_ADDR'];
@@ -91,7 +91,11 @@ switch ($b4af8b82d0e004d138b6f62947d7a1fa) {
     case 'getURL':
         if (!empty($_REQUEST['url'])) {
             $e3539ad64f4d9fc6c2e465986c622369 = urldecode(base64_decode($_REQUEST['url']));
-            passthru("wget --no-check-certificate --user-agent \"Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0\" --timeout=40 -O - \"{$e3539ad64f4d9fc6c2e465986c622369}\" -q 2>/dev/null");
+            // Only fetch plain http(s) URLs, and pass the URL as a single
+            // shell-escaped argument so it cannot inject wget flags or shell.
+            if (preg_match('#^https?://#i', $e3539ad64f4d9fc6c2e465986c622369)) {
+                passthru('wget --no-check-certificate --user-agent "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0" --timeout=40 -O - ' . escapeshellarg($e3539ad64f4d9fc6c2e465986c622369) . ' -q 2>/dev/null');
+            }
             die;
         }
         break;
