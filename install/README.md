@@ -4,6 +4,9 @@
 **testing**: the security-hardened streaming backend from this repo plus the
 XtreamUI admin panel with the fixes in `install/admin-security.patch` applied.
 
+For a step-by-step VPS walkthrough (provision → install → smoke-test → connect
+Claude for live debugging), see **`install/QUICKSTART.md`**.
+
 ```bash
 git clone <this-repo> project-x && cd project-x
 sudo ./install.sh
