@@ -1,5 +1,42 @@
---- a/admin/functions.php	2026-10-27 07:28:19.164772374 +0000
-+++ b/admin/functions.php	2026-10-27 07:26:48.080216822 +0000
+diff -ruN -x .git a/admin/api.php b/admin/api.php
+--- a/admin/api.php	2020-05-07 22:34:24.000000000 +0000
++++ b/admin/api.php	2026-10-27 08:41:02.865891380 +0000
+@@ -314,7 +314,7 @@
+             $rResult = $db->query("SELECT `ip` FROM `blocked_ips` WHERE `id` = ".intval($rIPID).";");
+             if (($rResult) && ($rResult->num_rows > 0)) {
+                 foreach ($rServers as $rServer) {
+-                    sexec($rServer["id"], "sudo /sbin/iptables -D INPUT -s ".$rResult->fetch_assoc()["ip"]." -j DROP");
++                    sexec($rServer["id"], "sudo /sbin/iptables -D INPUT -s ".escapeshellarg($rResult->fetch_assoc()["ip"])." -j DROP");
+                 }
+             }
+             $db->query("DELETE FROM `blocked_ips` WHERE `id` = ".intval($rIPID).";");
+@@ -817,7 +817,7 @@
+         set_time_limit(300);
+         ini_set('max_execution_time', 300);
+         ini_set('default_socket_timeout', 300);
+-        echo shell_exec("/home/xtreamcodes/iptv_xtream_codes/bin/ffprobe -v quiet -probesize 2000000 -print_format json -show_format -show_streams \"".escapeshellcmd($_GET["stream"])."\"");exit;
++        echo shell_exec("/home/xtreamcodes/iptv_xtream_codes/bin/ffprobe -v quiet -probesize 2000000 -print_format json -show_format -show_streams ".escapeshellarg($_GET["stream"]));exit;
+     } else if ($_GET["action"] == "clear_logs") {
+         if ((!$rPermissions["is_admin"]) OR ((!hasPermissions("adv", "reg_userlog")) && (!hasPermissions("adv", "client_request_log")) && (!hasPermissions("adv", "connection_logs")) && (!hasPermissions("adv", "stream_errors")) && (!hasPermissions("adv", "credits_log")) && (!hasPermissions("adv", "folder_watch_settings")))) { echo json_encode(Array("result" => False)); exit; }
+         if (strlen($_GET["from"]) == 0) {
+@@ -869,12 +869,12 @@
+         } else if ($rSub == "restore") {
+             $rBackup = pathinfo($_GET["filename"])["filename"];
+             $rFilename = MAIN_DIR."adtools/backups/".$rBackup.".sql";
+-            $rCommand = "mysql -u ".$_INFO["db_user"]." -p".$_INFO["db_pass"]." -P ".$_INFO["db_port"]." ".$_INFO["db_name"]." < \"".$rFilename."\"";
++            $rCommand = "mysql -u ".$_INFO["db_user"]." -p".$_INFO["db_pass"]." -P ".$_INFO["db_port"]." ".$_INFO["db_name"]." < ".escapeshellarg($rFilename);
+             $rRet = shell_exec($rCommand);
+             echo json_encode(Array("result" => True));exit;
+         } else if ($rSub == "backup") {
+             $rFilename = MAIN_DIR."adtools/backups/backup_".date("Y-m-d_H:i:s").".sql";
+-            $rCommand = "mysqldump -u ".$_INFO["db_user"]." -p".$_INFO["db_pass"]." -P ".$_INFO["db_port"]." ".$_INFO["db_name"]." --ignore-table=xtream_iptvpro.user_activity --ignore-table=xtream_iptvpro.stream_logs --ignore-table=xtream_iptvpro.panel_logs --ignore-table=xtream_iptvpro.client_logs --ignore-table=xtream_iptvpro.epg_data > \"".$rFilename."\"";
++            $rCommand = "mysqldump -u ".$_INFO["db_user"]." -p".$_INFO["db_pass"]." -P ".$_INFO["db_port"]." ".$_INFO["db_name"]." --ignore-table=xtream_iptvpro.user_activity --ignore-table=xtream_iptvpro.stream_logs --ignore-table=xtream_iptvpro.panel_logs --ignore-table=xtream_iptvpro.client_logs --ignore-table=xtream_iptvpro.epg_data > ".escapeshellarg($rFilename);
+             $rRet = shell_exec($rCommand);
+             if (file_exists($rFilename)) {
+                 $rBackups = getBackups();
+diff -ruN -x .git a/admin/functions.php b/admin/functions.php
+--- a/admin/functions.php	2020-05-08 00:24:46.000000000 +0000
++++ b/admin/functions.php	2026-10-27 08:40:12.601979728 +0000
 @@ -95,9 +95,27 @@
  }
  
@@ -114,19 +151,55 @@
              return $rRow;
          }
      }
---- a/admin/api.php	2026-10-27 07:28:19.172772374 +0000
-+++ b/admin/api.php	2026-10-27 07:04:48.266208596 +0000
-@@ -314,7 +314,7 @@
-             $rResult = $db->query("SELECT `ip` FROM `blocked_ips` WHERE `id` = ".intval($rIPID).";");
-             if (($rResult) && ($rResult->num_rows > 0)) {
-                 foreach ($rServers as $rServer) {
--                    sexec($rServer["id"], "sudo /sbin/iptables -D INPUT -s ".$rResult->fetch_assoc()["ip"]." -j DROP");
-+                    sexec($rServer["id"], "sudo /sbin/iptables -D INPUT -s ".escapeshellarg($rResult->fetch_assoc()["ip"])." -j DROP");
-                 }
-             }
-             $db->query("DELETE FROM `blocked_ips` WHERE `id` = ".intval($rIPID).";");
---- a/admin/ip.php	2026-10-27 07:28:19.180772374 +0000
-+++ b/admin/ip.php	2026-10-27 07:04:48.267170768 +0000
+diff -ruN -x .git a/admin/header.php b/admin/header.php
+--- a/admin/header.php	2020-05-07 22:34:20.000000000 +0000
++++ b/admin/header.php	2026-10-27 08:40:12.602074041 +0000
+@@ -2,6 +2,19 @@
+ <!DOCTYPE html>
+ <html lang="en">
+     <head>
++        <meta name="csrf-token" content="<?php echo isset($_SESSION['csrf']) ? htmlspecialchars($_SESSION['csrf'], ENT_QUOTES) : ''; ?>">
++        <script>
++        (function(){
++            var m=document.querySelector('meta[name="csrf-token"]');var t=m?m.getAttribute('content'):'';if(!t)return;
++            var _o=XMLHttpRequest.prototype.open,_s=XMLHttpRequest.prototype.send;
++            XMLHttpRequest.prototype.open=function(mth){this._csrfM=(mth||'').toUpperCase();return _o.apply(this,arguments);};
++            XMLHttpRequest.prototype.send=function(){try{if(this._csrfM&&this._csrfM!=='GET'&&this._csrfM!=='HEAD')this.setRequestHeader('X-CSRF-Token',t);}catch(e){}return _s.apply(this,arguments);};
++            if(window.fetch){var _f=window.fetch;window.fetch=function(i,n){n=n||{};var mm=(n.method||'GET').toUpperCase();if(mm!=='GET'&&mm!=='HEAD'){if(n.headers instanceof Headers){n.headers.set('X-CSRF-Token',t);}else{n.headers=n.headers||{};n.headers['X-CSRF-Token']=t;}}return _f(i,n);};}
++            function add(f){if(f&&f.tagName==='FORM'&&!f.querySelector('input[name="csrf_token"]')){var e=document.createElement('input');e.type='hidden';e.name='csrf_token';e.value=t;f.appendChild(e);}}
++            document.addEventListener('submit',function(e){add(e.target);},true);
++            document.addEventListener('DOMContentLoaded',function(){var fs=document.getElementsByTagName('form');for(var i=0;i<fs.length;i++)add(fs[i]);});
++        })();
++        </script>
+         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+         <title>Xtream UI</title>
+         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+diff -ruN -x .git a/admin/header_sidebar.php b/admin/header_sidebar.php
+--- a/admin/header_sidebar.php	2020-05-07 22:34:26.000000000 +0000
++++ b/admin/header_sidebar.php	2026-10-27 08:40:12.602092369 +0000
+@@ -2,6 +2,19 @@
+ <!DOCTYPE html>
+ <html lang="en">
+     <head>
++        <meta name="csrf-token" content="<?php echo isset($_SESSION['csrf']) ? htmlspecialchars($_SESSION['csrf'], ENT_QUOTES) : ''; ?>">
++        <script>
++        (function(){
++            var m=document.querySelector('meta[name="csrf-token"]');var t=m?m.getAttribute('content'):'';if(!t)return;
++            var _o=XMLHttpRequest.prototype.open,_s=XMLHttpRequest.prototype.send;
++            XMLHttpRequest.prototype.open=function(mth){this._csrfM=(mth||'').toUpperCase();return _o.apply(this,arguments);};
++            XMLHttpRequest.prototype.send=function(){try{if(this._csrfM&&this._csrfM!=='GET'&&this._csrfM!=='HEAD')this.setRequestHeader('X-CSRF-Token',t);}catch(e){}return _s.apply(this,arguments);};
++            if(window.fetch){var _f=window.fetch;window.fetch=function(i,n){n=n||{};var mm=(n.method||'GET').toUpperCase();if(mm!=='GET'&&mm!=='HEAD'){if(n.headers instanceof Headers){n.headers.set('X-CSRF-Token',t);}else{n.headers=n.headers||{};n.headers['X-CSRF-Token']=t;}}return _f(i,n);};}
++            function add(f){if(f&&f.tagName==='FORM'&&!f.querySelector('input[name="csrf_token"]')){var e=document.createElement('input');e.type='hidden';e.name='csrf_token';e.value=t;f.appendChild(e);}}
++            document.addEventListener('submit',function(e){add(e.target);},true);
++            document.addEventListener('DOMContentLoaded',function(){var fs=document.getElementsByTagName('form');for(var i=0;i<fs.length;i++)add(fs[i]);});
++        })();
++        </script>
+         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+         <title>Xtream UI</title>
+         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+diff -ruN -x .git a/admin/ip.php b/admin/ip.php
+--- a/admin/ip.php	2020-05-08 02:01:40.000000000 +0000
++++ b/admin/ip.php	2026-10-27 08:40:12.602051886 +0000
 @@ -19,7 +19,9 @@
          }
          $rQuery = "REPLACE INTO `blocked_ips`(".$rCols.") VALUES(".$rValues.");";
@@ -138,8 +211,9 @@
              $rInsertID = $db->insert_id;
          }
          if (isset($rInsertID)) {
---- a/admin/resize.php	2026-10-27 07:28:19.188772374 +0000
-+++ b/admin/resize.php	2026-10-27 07:05:08.204804189 +0000
+diff -ruN -x .git a/admin/resize.php b/admin/resize.php
+--- a/admin/resize.php	2020-05-07 22:34:22.000000000 +0000
++++ b/admin/resize.php	2026-10-27 08:40:12.602064242 +0000
 @@ -1,10 +1,51 @@
  <?php
 -ini_set('display_errors', 1);
@@ -215,47 +289,15 @@
 -?>
 \ No newline at end of file
 +?>
---- a/admin/header.php	2026-10-27 07:28:19.196772374 +0000
-+++ b/admin/header.php	2026-10-27 07:27:09.044840248 +0000
-@@ -2,6 +2,19 @@
- <!DOCTYPE html>
- <html lang="en">
-     <head>
-+        <meta name="csrf-token" content="<?php echo isset($_SESSION['csrf']) ? htmlspecialchars($_SESSION['csrf'], ENT_QUOTES) : ''; ?>">
-+        <script>
-+        (function(){
-+            var m=document.querySelector('meta[name="csrf-token"]');var t=m?m.getAttribute('content'):'';if(!t)return;
-+            var _o=XMLHttpRequest.prototype.open,_s=XMLHttpRequest.prototype.send;
-+            XMLHttpRequest.prototype.open=function(mth){this._csrfM=(mth||'').toUpperCase();return _o.apply(this,arguments);};
-+            XMLHttpRequest.prototype.send=function(){try{if(this._csrfM&&this._csrfM!=='GET'&&this._csrfM!=='HEAD')this.setRequestHeader('X-CSRF-Token',t);}catch(e){}return _s.apply(this,arguments);};
-+            if(window.fetch){var _f=window.fetch;window.fetch=function(i,n){n=n||{};var mm=(n.method||'GET').toUpperCase();if(mm!=='GET'&&mm!=='HEAD'){if(n.headers instanceof Headers){n.headers.set('X-CSRF-Token',t);}else{n.headers=n.headers||{};n.headers['X-CSRF-Token']=t;}}return _f(i,n);};}
-+            function add(f){if(f&&f.tagName==='FORM'&&!f.querySelector('input[name="csrf_token"]')){var e=document.createElement('input');e.type='hidden';e.name='csrf_token';e.value=t;f.appendChild(e);}}
-+            document.addEventListener('submit',function(e){add(e.target);},true);
-+            document.addEventListener('DOMContentLoaded',function(){var fs=document.getElementsByTagName('form');for(var i=0;i<fs.length;i++)add(fs[i]);});
-+        })();
-+        </script>
-         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-         <title>Xtream UI</title>
-         <meta name="viewport" content="width=device-width, initial-scale=1.0">
---- a/admin/header_sidebar.php	2026-10-27 07:28:19.208772373 +0000
-+++ b/admin/header_sidebar.php	2026-10-27 07:27:09.045415869 +0000
-@@ -2,6 +2,19 @@
- <!DOCTYPE html>
- <html lang="en">
-     <head>
-+        <meta name="csrf-token" content="<?php echo isset($_SESSION['csrf']) ? htmlspecialchars($_SESSION['csrf'], ENT_QUOTES) : ''; ?>">
-+        <script>
-+        (function(){
-+            var m=document.querySelector('meta[name="csrf-token"]');var t=m?m.getAttribute('content'):'';if(!t)return;
-+            var _o=XMLHttpRequest.prototype.open,_s=XMLHttpRequest.prototype.send;
-+            XMLHttpRequest.prototype.open=function(mth){this._csrfM=(mth||'').toUpperCase();return _o.apply(this,arguments);};
-+            XMLHttpRequest.prototype.send=function(){try{if(this._csrfM&&this._csrfM!=='GET'&&this._csrfM!=='HEAD')this.setRequestHeader('X-CSRF-Token',t);}catch(e){}return _s.apply(this,arguments);};
-+            if(window.fetch){var _f=window.fetch;window.fetch=function(i,n){n=n||{};var mm=(n.method||'GET').toUpperCase();if(mm!=='GET'&&mm!=='HEAD'){if(n.headers instanceof Headers){n.headers.set('X-CSRF-Token',t);}else{n.headers=n.headers||{};n.headers['X-CSRF-Token']=t;}}return _f(i,n);};}
-+            function add(f){if(f&&f.tagName==='FORM'&&!f.querySelector('input[name="csrf_token"]')){var e=document.createElement('input');e.type='hidden';e.name='csrf_token';e.value=t;f.appendChild(e);}}
-+            document.addEventListener('submit',function(e){add(e.target);},true);
-+            document.addEventListener('DOMContentLoaded',function(){var fs=document.getElementsByTagName('form');for(var i=0;i<fs.length;i++)add(fs[i]);});
-+        })();
-+        </script>
-         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-         <title>Xtream UI</title>
-         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+diff -ruN -x .git a/admin/watch.php b/admin/watch.php
+--- a/admin/watch.php	2020-05-07 22:34:22.000000000 +0000
++++ b/admin/watch.php	2026-10-27 08:41:02.866334410 +0000
+@@ -4,7 +4,7 @@
+ 
+ if (isset($_GET["kill"])) {
+     if (isset($rAdminSettings["watch_pid"])) {
+-        exec("pkill -9 ".$rAdminSettings["watch_pid"]);
++        exec("pkill -9 ".intval($rAdminSettings["watch_pid"]));
+     }
+ }
+ 

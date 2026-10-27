@@ -65,8 +65,11 @@ that lets the backend load at all.
 Admin panel (`install/admin-security.patch`, applied at install time):
 pre-auth SSRF fix in `resize.php`, `getIP()` trusted-proxy + valid-IP handling,
 `iptables` shell-arg escaping, per-user password salt with backward-compatible
-verification, `SameSite=Lax`/`HttpOnly` session cookie, and per-form CSRF
-tokens. See the project history for details.
+verification, `SameSite=Lax`/`HttpOnly` session cookie, per-form CSRF tokens,
+and command-injection fixes in `api.php` (the database backup/restore `.sql`
+filename and the `map_stream` ffprobe argument) and `watch.php` (the `pkill`
+PID), all now using `escapeshellarg()`/`intval()`. See the project history and
+`SECURITY-NOTES.md` for details.
 
 ## Uninstall / reset
 

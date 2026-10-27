@@ -65,6 +65,35 @@ operator action:
 - `live_streaming_pass` and `api_pass` in the `settings` table — both are
   empty by default and gate the admin/streaming APIs.
 
+## Admin panel audit (fixes in install/admin-security.patch)
+
+The admin panel is not in this repo; its fixes ship as a patch applied at
+install time. A command-execution audit found and fixed three authenticated
+(admin / reseller-permission-gated) injection points, all now using
+`escapeshellarg()` / `intval()`:
+
+- `api.php` `backup`/`restore`: the `.sql` path derived from `$_GET["filename"]`
+  via `pathinfo()` was interpolated unescaped into a `mysql` / `mysqldump` shell
+  command. `pathinfo()` strips directories but not shell metacharacters, so a
+  crafted `filename` broke out of the quotes — command injection. Now
+  `escapeshellarg()`'d.
+- `api.php` `map_stream`: `escapeshellcmd($_GET["stream"])` was placed inside
+  double quotes (the paired-quote quirk, plus ffprobe argument injection).
+  Switched to `escapeshellarg()`.
+- `watch.php`: `exec("pkill -9 ".$watch_pid)` with a non-integer value. Now
+  `intval()`'d.
+
+The rest of the audit came back clean: no raw superglobal reaches SQL (the panel
+uses `ESC()` / `intval()` consistently), no `include`/`require` LFI, and the
+`login.php` reCAPTCHA fetch targets a fixed Google host.
+
+**Not changed (operator decision):** the panel still calls `xtream-ui.com` on
+every Settings page load (`settings.php`) and can download + install a GeoLite2
+`.mmdb` from it (`updateGeoLite2()`). This is the same third-party phone-home
+class that was removed from the backend — a privacy leak, a page-load
+dependency on an external domain, and a supply-chain risk if that domain changes
+hands. Removing or gating it is recommended.
+
 ## Done in later stages
 
 - `nginx/sbin/nginx` rebuilt against OpenSSL 3.5.5 — Heartbleed fixed
