@@ -87,3 +87,9 @@ operator action:
   boots via `init.php`.
 - `system_api.php` `print_image`: fixed arbitrary file read (restricted to
   MOVIES_IMAGES). `xplugin.php` screen upload: now requires a real image.
+- `includes/lib.php` stalker/MAG token decrypt: replaced the removed `mcrypt`
+  Rijndael-256 (256-bit block, no openssl equivalent) with a phpseclib-backed,
+  mcrypt-compatible path — uses mcrypt where still present, phpseclib otherwise,
+  and fails closed if neither is available instead of fataling. The HMAC check
+  is now constant-time (`hash_equals`). This lets the backend run on PHP 8.x;
+  the installer vendors phpseclib automatically.

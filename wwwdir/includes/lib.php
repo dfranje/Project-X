@@ -195,19 +195,51 @@ class A78Bf8d35765BE2408c50712ce7a43AD
         $d826bb1b5f455613052c5b3b5949121c = explode('|', $d826bb1b5f455613052c5b3b5949121c . '|');
         $e604917258b158ba003c4d7352099362 = base64_decode($d826bb1b5f455613052c5b3b5949121c[0]);
         $d17b616e2ba1c5acd831fc89992d19b8 = base64_decode($d826bb1b5f455613052c5b3b5949121c[1]);
-        if (strlen($d17b616e2ba1c5acd831fc89992d19b8) !== mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC)) {
+        // Rijndael-256 uses a 256-bit (32-byte) block, so the CBC IV is 32 bytes.
+        if (strlen($d17b616e2ba1c5acd831fc89992d19b8) !== 32) {
             return false;
         }
         $E7cca48cfca85fc445419a32d7d8f973 = pack('H*', $E7cca48cfca85fc445419a32d7d8f973);
-        $D49bad8413a1e326e00365852b39c341 = trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $E7cca48cfca85fc445419a32d7d8f973, $e604917258b158ba003c4d7352099362, MCRYPT_MODE_CBC, $d17b616e2ba1c5acd831fc89992d19b8));
+        $D49bad8413a1e326e00365852b39c341 = self::rijndael256CbcDecrypt($e604917258b158ba003c4d7352099362, $E7cca48cfca85fc445419a32d7d8f973, $d17b616e2ba1c5acd831fc89992d19b8);
+        if ($D49bad8413a1e326e00365852b39c341 === false) {
+            return false;
+        }
+        $D49bad8413a1e326e00365852b39c341 = trim($D49bad8413a1e326e00365852b39c341);
         $bad0c96fedbc6eccfe927016a4dc3cd6 = substr($D49bad8413a1e326e00365852b39c341, -64);
         $D49bad8413a1e326e00365852b39c341 = substr($D49bad8413a1e326e00365852b39c341, 0, -64);
         $Bf8251826e25f660c6052c269250efc7 = hash_hmac('sha256', $D49bad8413a1e326e00365852b39c341, substr(bin2hex($E7cca48cfca85fc445419a32d7d8f973), -32));
-        if ($Bf8251826e25f660c6052c269250efc7 !== $bad0c96fedbc6eccfe927016a4dc3cd6) {
+        if (!hash_equals($Bf8251826e25f660c6052c269250efc7, (string) $bad0c96fedbc6eccfe927016a4dc3cd6)) {
             return false;
         }
         $D49bad8413a1e326e00365852b39c341 = unserialize($D49bad8413a1e326e00365852b39c341);
         return $D49bad8413a1e326e00365852b39c341;
+    }
+
+    // mcrypt was removed in PHP 7.2; its MCRYPT_RIJNDAEL_256 is a 256-bit-block
+    // Rijndael (NOT AES, so openssl has no equivalent) used for stalker/MAG
+    // portal tokens. Decrypt via mcrypt where the extension still exists,
+    // otherwise via phpseclib's mcrypt-compatible Rijndael. With neither
+    // available, stalker-token auth is unsupported on this build (fails closed).
+    private static function rijndael256CbcDecrypt($data, $key, $iv)
+    {
+        if (function_exists('mcrypt_decrypt')) {
+            return mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $key, $data, MCRYPT_MODE_CBC, $iv);
+        }
+        $autoload = __DIR__ . '/vendor/autoload.php';
+        if (!class_exists('phpseclib3\\Crypt\\Rijndael') && !class_exists('phpseclib\\Crypt\\Rijndael') && is_file($autoload)) {
+            require_once $autoload;
+        }
+        foreach (array('phpseclib3\\Crypt\\Rijndael', 'phpseclib\\Crypt\\Rijndael') as $class) {
+            if (class_exists($class)) {
+                $rijndael = new $class('cbc');
+                $rijndael->setBlockLength(256);
+                $rijndael->setKey($key);
+                $rijndael->setIV($iv);
+                $rijndael->disablePadding();
+                return $rijndael->decrypt($data);
+            }
+        }
+        return false;
     }
     public static function D508D1e2ECC2e304e5BaB85e6a347b23($e3539ad64f4d9fc6c2e465986c622369, $Abc172f3d3864ea14d922df45f999b5c = false)
     {

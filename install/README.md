@@ -33,22 +33,26 @@ At the end it prints the admin URL, the admin credentials and the DB password �
 | MariaDB schema + admin user | Works |
 | Client/stream **API** bootstrap (`init.php`) | Loads |
 | Live **streaming** (ffmpeg spawn, HLS) | Partial — needs testing per stream |
-| GeoIP lookups | **Known issue** on PHP 8.x (the bundled reader is PHP 7.2-era); use PHP 7.4 if you need it |
+| Stalker / MAG portal tokens | Works on 8.x via phpseclib (installed automatically; mcrypt was removed in PHP 7.2) — validate with a real MAG/stalker client |
+| GeoIP lookups | Should work on 8.x (the reader uses only PHP 8-valid syntax); validate on first use |
 
-### Why the version caveats
-The code targets **PHP 7.2**. The binaries that ship in the repo (`php/bin/php`,
-the old `nginx`) are linked against libraries that no longer exist on Ubuntu
-24.04, so the installer uses:
+### How it runs on PHP 8.3
+The code was written for **PHP 7.2**, but the only hard incompatibilities have
+been bridged, so it runs on the system **PHP 8.3** that ships with Ubuntu 24.04:
 
-- **System PHP-FPM** (8.3 on 24.04) with a `mysqli_report(OFF)` shim so the
-  7.2-style `mysqli` error handling keeps working, and three pools on the unix
-  sockets the backend's `nginx/conf/balance.conf` expects.
-- **This repo's rebuilt nginx** (`nginx/sbin/nginx`, nginx 1.28 + OpenSSL 3.5.5
-  — the Heartbleed fix), statically linked, so it runs on 24.04.
+- **`mysqli` error handling** — a `mysqli_report(OFF)` auto-prepend restores the
+  7.2-style return-based semantics (8.1+ throws by default).
+- **`mcrypt`** (removed in 7.2) — only the stalker/MAG token decrypt used it,
+  for a 256-bit-block Rijndael that openssl can't do. `includes/lib.php` now
+  calls mcrypt when present and otherwise **phpseclib** (vendored by the
+  installer under `wwwdir/includes/vendor`), which is mcrypt-compatible.
+- **nginx** — the repo's rebuilt binary (`nginx/sbin/nginx`, nginx 1.28 +
+  OpenSSL 3.5.5, statically linked) runs on 24.04; three PHP-FPM pools listen on
+  the unix sockets `nginx/conf/balance.conf` expects.
 
-For the **closest-to-original** backend behaviour, install **PHP 7.4** from the
-`ondrej/php` PPA before running, then re-point `PHP_VER` — 7.4 keeps the return
--based `mysqli` semantics and avoids the removed-function issues of 8.x.
+Two things still want a live smoke-test because they can't be exercised
+headless here: **GeoIP** lookups and **stalker/MAG** login. Both use only
+PHP 8-valid code now; confirm them against a real client on your VPS.
 
 ## Security fixes included
 

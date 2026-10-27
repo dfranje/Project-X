@@ -55,7 +55,7 @@ apt-get update -q
 apt-get install -y -q \
   mariadb-server \
   php-fpm php-cli php-mysql php-gd php-curl php-mbstring php-xml php-bcmath php-zip \
-  ffmpeg unzip git wget curl openssl cron ca-certificates
+  ffmpeg unzip git wget curl openssl cron ca-certificates composer
 
 # Detect the installed PHP-FPM version (Ubuntu 24.04 -> 8.3).
 PHP_VER="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null)"
@@ -63,7 +63,7 @@ PHP_VER="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null)"
 FPM_SVC="php${PHP_VER}-fpm"
 log "Using PHP ${PHP_VER} (${FPM_SVC})."
 if [ "${PHP_VER%%.*}" -ge 8 ]; then
-  warn "This code targets PHP 7.2. PHP ${PHP_VER} works for the admin panel; some backend features may not. PHP 7.4 (ondrej/php PPA) is closer to the original."
+  log "PHP ${PHP_VER}: admin panel and streaming backend run natively. The stalker/MAG token path (mcrypt was removed in 7.2) uses phpseclib, installed below. Validate GeoIP lookups and stalker login on first use."
 fi
 
 # ------------------------------------------------------------------- user ------
@@ -82,6 +82,21 @@ mkdir -p "${INSTALL_DIR}/php" \
          "${INSTALL_DIR}/created_channels" "${INSTALL_DIR}/delay" "${INSTALL_DIR}/tv_archive" \
          "${INSTALL_DIR}/logs" "${INSTALL_DIR}/async_incs" "${INSTALL_DIR}/signals"
 chmod +x "${INSTALL_DIR}/bin/"* "${INSTALL_DIR}/nginx/sbin/nginx" "${INSTALL_DIR}/nginx_rtmp/sbin/nginx_rtmp" 2>/dev/null || true
+
+# phpseclib supplies the mcrypt-compatible Rijndael-256 (256-bit block, not AES)
+# that the stalker/MAG token decrypt in includes/lib.php needs once mcrypt is
+# gone (PHP >= 7.2). Vendored under includes/vendor; lib.php loads it if present.
+if ! php -r 'exit(function_exists("mcrypt_decrypt") ? 0 : 1);' 2>/dev/null; then
+  log "Installing phpseclib (Rijndael-256 for stalker/MAG tokens)..."
+  if command -v composer >/dev/null; then
+    ( cd "${INSTALL_DIR}/wwwdir/includes" \
+        && COMPOSER_HOME="$(mktemp -d)" COMPOSER_ALLOW_SUPERUSER=1 \
+           composer require 'phpseclib/phpseclib:^3.0' --no-interaction --quiet ) \
+      || warn "phpseclib install failed; stalker/MAG token auth will be unavailable (the rest of the panel is unaffected)."
+  else
+    warn "composer not found; skipping phpseclib. Stalker/MAG token auth will be unavailable."
+  fi
+fi
 
 # ------------------------------------------------------- admin panel + fixes ---
 log "Downloading XtreamUI admin panel and applying security fixes..."
