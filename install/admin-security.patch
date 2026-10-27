@@ -36,8 +36,45 @@ diff -ruN -x .git a/admin/api.php b/admin/api.php
                  $rBackups = getBackups();
 diff -ruN -x .git a/admin/functions.php b/admin/functions.php
 --- a/admin/functions.php	2020-05-08 00:24:46.000000000 +0000
-+++ b/admin/functions.php	2026-10-27 08:40:12.601979728 +0000
-@@ -95,9 +95,27 @@
++++ b/admin/functions.php	2026-10-27 08:47:35.163825835 +0000
+@@ -47,29 +47,13 @@
+     return $rOrdered + $rArray;
+ }
+ 
+-function updateGeoLite2() {
+-    global $rAdminSettings;
+-    $rURL = "https://xtream-ui.com/GeoLite2/status.json";
+-    $rData = json_decode(file_get_contents($rURL), True);
+-    if ($rData["version"]) {
+-        $rFileData = file_get_contents("https://xtream-ui.com/GeoLite2/GeoLite2.mmdb");
+-        if (stripos($rFileData, "MaxMind.com") !== false) {
+-            $rFilePath = "/home/xtreamcodes/iptv_xtream_codes/GeoLite2.mmdb";
+-            exec("sudo chattr -i {$rFilePath}");
+-            unlink($rFilePath);
+-            file_put_contents($rFilePath, $rFileData);
+-            exec("sudo chattr +i {$rFilePath}");
+-            if (file_get_contents($rFilePath) == $rFileData) {
+-                $rAdminSettings["geolite2_version"] = $rData["version"];
+-                writeAdminSettings();
+-                return true;
+-            } else {
+-                return false;
+-            }
+-        }
+-    }
+-    return false;
+-}
++function updateGeoLite2() {
++    // Third-party phone-home removed: this previously downloaded a GeoLite2
++    // .mmdb from xtream-ui.com and installed it (supply-chain risk if that
++    // domain changes hands). Update GeoLite2 manually from MaxMind and place
++    // it at /home/xtreamcodes/iptv_xtream_codes/GeoLite2.mmdb.
++    return false;
++}
+ 
+ function resetSTB($rID) {
+     global $db;
+@@ -95,9 +79,27 @@
  }
  
  if (session_status() == PHP_SESSION_NONE) {
@@ -65,7 +102,7 @@ diff -ruN -x .git a/admin/functions.php b/admin/functions.php
  if ($rDebug) {
      ini_set('display_errors', 1);
      ini_set('display_startup_errors', 1);
-@@ -1293,7 +1311,7 @@
+@@ -1293,7 +1295,7 @@
      return false;
  }
  
@@ -74,7 +111,7 @@ diff -ruN -x .git a/admin/functions.php b/admin/functions.php
      if ($salt == "") {
          $salt = substr(bin2hex(openssl_random_pseudo_bytes(16)),0,16);
      }
-@@ -1301,17 +1319,58 @@
+@@ -1301,17 +1303,58 @@
      return $hash;
  }
  
@@ -142,7 +179,7 @@ diff -ruN -x .git a/admin/functions.php b/admin/functions.php
  }
  
  function getID() {
-@@ -1335,7 +1394,7 @@
+@@ -1335,7 +1378,7 @@
      $result = $db->query("SELECT `id`, `username`, `password`, `member_group_id`, `google_2fa_sec`, `status` FROM `reg_users` WHERE `username` = '".ESC($rUsername)."' LIMIT 1;");
      if (($result) && ($result->num_rows == 1)) {
          $rRow = $result->fetch_assoc();
@@ -289,6 +326,22 @@ diff -ruN -x .git a/admin/resize.php b/admin/resize.php
 -?>
 \ No newline at end of file
 +?>
+diff -ruN -x .git a/admin/settings.php b/admin/settings.php
+--- a/admin/settings.php	2020-05-08 00:05:28.000000000 +0000
++++ b/admin/settings.php	2026-10-27 08:47:35.162362367 +0000
+@@ -257,9 +257,9 @@
+                                 There was an error saving settings! Please check the form entry and try again.
+                             </div>
+                             <?php }
+-							$rContext = stream_context_create(array('http'=> array('timeout' => 3)));
+-							$rCurrent = json_decode(file_get_contents("https://xtream-ui.com/current.json", false, $rContext), True);
+-                            $rGeoLite2 = json_decode(file_get_contents("https://xtream-ui.com/GeoLite2/status.json", false, $rContext), True);
++							// Third-party phone-home removed: do not contact xtream-ui.com on page load.
++							$rCurrent = array("official" => array("", ""), "ea" => array("", ""));
++							$rGeoLite2 = array("version" => 0);
+                             if (intval($rGeoLite2["version"]) > $rAdminSettings["geolite2_version"]) {
+ 							?>
+                             <div class="alert alert-info alert-dismissible fade show" role="alert">
 diff -ruN -x .git a/admin/watch.php b/admin/watch.php
 --- a/admin/watch.php	2020-05-07 22:34:22.000000000 +0000
 +++ b/admin/watch.php	2026-10-27 08:41:02.866334410 +0000

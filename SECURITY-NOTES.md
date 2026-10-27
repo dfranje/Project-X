@@ -87,12 +87,15 @@ The rest of the audit came back clean: no raw superglobal reaches SQL (the panel
 uses `ESC()` / `intval()` consistently), no `include`/`require` LFI, and the
 `login.php` reCAPTCHA fetch targets a fixed Google host.
 
-**Not changed (operator decision):** the panel still calls `xtream-ui.com` on
-every Settings page load (`settings.php`) and can download + install a GeoLite2
-`.mmdb` from it (`updateGeoLite2()`). This is the same third-party phone-home
-class that was removed from the backend — a privacy leak, a page-load
-dependency on an external domain, and a supply-chain risk if that domain changes
-hands. Removing or gating it is recommended.
+Third-party phone-home removed (same class as the backend's `xtream-codes.com`
+cleanup): the Settings page no longer contacts `xtream-ui.com` on load (the
+`current.json` / `GeoLite2/status.json` fetches in `settings.php` are gone), and
+`updateGeoLite2()` in `functions.php` no longer downloads and installs a
+GeoLite2 `.mmdb` from that domain (it was a privacy leak, a blocking page-load
+dependency on an external host, and a supply-chain risk if the domain changed
+hands). GeoLite2 is now updated manually from MaxMind, placed at
+`/home/xtreamcodes/iptv_xtream_codes/GeoLite2.mmdb`. The only remaining
+`xtream-ui.com` references are cosmetic footer/hyperlink text.
 
 ## Done in later stages
 
