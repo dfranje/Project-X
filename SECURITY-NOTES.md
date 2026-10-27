@@ -79,8 +79,32 @@ operator action:
 - tmp caches: `unserialize()` replaced with JSON (object-injection removed).
 - `api.php`: `user_data` column whitelist (mass-assignment fixed).
 - SQL: escaped/parameterized the query sites that bypassed the escape layer
-  (`crl_sync.php`, `xmltv.php`, `portal.php`, `player_api.php`). A full PDO
-  migration of the custom query layer is still a separate, larger effort.
+  (`crl_sync.php`, `offline_cons.php`, `xmltv.php`, `portal.php`,
+  `player_api.php`). A follow-up **full backend sweep** then confirmed the
+  result: `ipTV_db::query()` is a printf-style layer (`mysqli_real_escape_string`
+  on every arg, then `vsprintf` into the format string), and no call site
+  concatenates or interpolates a variable into a format string. The only
+  callers of the unescaped paths — the raw-query method `ipTV_db::FC53e22a…()`
+  and one direct `mysqli_query()` — all pre-escape their input: `api.php` builds
+  the `users` INSERT through a builder that sanitises column names
+  (`preg_replace` to `[A-Za-z0-9_]`) and `escape()`s every value; the
+  `crl_sync.php`/`offline_cons.php` log parsers `array_map('escape', …)` each
+  client-supplied field before the bulk INSERT; `xmltv.php` escapes+quotes each
+  `epg_id` and `intval`s the date offsets. A full PDO rewrite of the custom
+  layer would be churn with no security benefit, so it is deliberately not done.
+
+## Known functional (non-security) issue — validate on a live server
+
+The two client-logging crons `crons/crl_sync.php` and `crons/offline_cons.php`
+have their **statement order scrambled by the ionCube decode** (the same class
+of damage as the repaired `goto` fatals, but these still pass `php -l`). For
+example `offline_cons.php` tests `file_exists($file)` and runs the
+`user_activity` INSERT *before* the lines that set `$file` and build the VALUES
+string, so as a linear script the body is a no-op. This is not a vulnerability
+(the SQLi vector in the builders is already closed), but it means the
+`client_logs` / `user_activity` stats tables likely do not populate. Repairing
+the control flow needs reconstruction plus a live run to confirm the tables fill
+without double-inserting — best done during VPS validation, not blind.
 - Repaired decode-dropped `goto` labels in `streaming.php`,
   `clients_live.php` and `geo/Decoder.php` — the backend previously could not
   even be included (compile fatal); it now passes `php -l` everywhere and
